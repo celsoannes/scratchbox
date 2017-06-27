@@ -2,8 +2,7 @@
 # CRIA JAIL BASICO CHROOT
 
 # BINARIOS DISPONIVEIS NO AMBIENTE
-#BIN=( bash cat clear grep less ls cp mkdir mv rm rmdir tail find man head cut tar nano vi vim dircolors tar gzip whereis locale pager nroff tbl mandb manpath groff locale-gen sh sed localedef touch gunzip help)
-BIN=( bash tr cat clear grep less ls cp mkdir mv rm rmdir tail find head cut tar nano vi vim dircolors tar gzip whereis sh sed touch gunzip whoami man mandb manpath groff pager locale localedef locale-gen strace )
+BIN=( bash tr cat clear grep less ls cp mkdir mv rm rmdir tail find head cut tar nano vi vim dircolors tar gzip whereis sh sed touch gunzip whoami )
 
 
 # PASTAS BASICAS DO SISTEMA
@@ -13,30 +12,46 @@ DIRECTORY=( bin  boot  dev  etc  home  lib  lib64  media  mnt  opt  proc  root  
 JAIL=/home/jogo
 
 
-#EXCECOES
-WHEREIS+=( /etc/manpath.config /etc/locale.gen /etc/default/locale /usr/bin/locale /usr/lib/locale /etc/locale.gen /etc/locale.alias /usr/share/locale /usr/share/man/man7/locale.7.gz /usr/share/man/man5/locale.5.gz /usr/share/man/man1/locale.1.gz /usr/share/X11/locale/pt_BR.UTF-8 /usr/share/i18n/charmaps )
-WHEREIS+=(  /usr/local/share/i18n/locales/pt_BR.UTF-8  /usr/share/i18n/locales/pt_BR.UTF-8  /usr/local/share/i18n/locales/pt_BR  )
-
-
 #---------- INICIO ----------#
 # CRIA PASTA JAIL
 rm -rf $JAIL
 mkdir -p -v $JAIL
+
+#---------- REQUISITOS OBRIGATORIOS ----------#
+# CRIA PASTAS DO SISTEMA
+D=0
+while [ "$D" -lt ${#DIRECTORY[@]} ]
+do
+    mkdir -p -v $JAIL/${DIRECTORY[$D]}
+    (( D++ ))
+done
+
+mknod -m 666 $JAIL/dev/null c 1 3
+mknod -m 666 $JAIL/dev/tty c 5 0
+mknod -m 666 $JAIL/dev/zero c 1 5
+mknod -m 666 $JAIL/dev/random c 1 8
+
+# CRIA LINKS SIMPOLICOS
+ln -s -v $JAIL/usr/sbin $JAIL/sbin
+ln -s -v $JAIL/usr/bin $JAIL/bin
+
+
+chmod 777 $JAIL/tmp
+
 
 
 # GRAVA CAMINHO COMPLETO DOS BINARIOS
 B=0
 while [ "$B" -lt ${#BIN[@]} ]
 do
-#    # CAMINHO DO BINARIO
-     BINPATH=`type -a ${BIN[$B]} | awk '{print $3}'`
-#    #BINPATH=`whereis -b ${BIN[$B]} | sed 's/\ /\n/g' | grep 'bin' | grep -v '\.' | head -1`
+    # CAMINHO DO BINARIO
+    BINPATH=`type -a ${BIN[$B]} | awk '{print $3}'`
 
     # ADICIONA CAMINHO DO BINARIO
     WHEREIS+=("$BINPATH")
 
-    # ADICIONA CAMINHO DOS MANUAIS E BINARIOS
-    WHEREIS+=(`whereis ${BIN[$B]} | cut -d ':' -f2`)
+    # ADICIONA CAMINHO DOS MANUAIS
+    #WHEREIS+=(`whereis -m ${BIN[$B]} | cut -d ':' -f2`)
 
     # ADICIONA CAMINHO COMPLETO DAS BIBLIOTECAS USADAS PELOS BINARIOS
     # NAO ESTA CONSIDERANDO AS BIBLIOTECAS /lib64
@@ -47,14 +62,13 @@ do
 
     # VERIFICA COM strace QUAIS ARQUIVOS CADA BIN NECESSITA
     echo "strace ${BIN[$B]}"
-#    echo `timeout 1s strace ${BIN[$B]} 2>&1 | grep 'open("' | grep -v '".."\|openat\|No such file or directory\|"."\|open("/dev' | cut -d '"' -f2 | tr "\n" " "`
     WHEREIS+=(`timeout 5s strace ${BIN[$B]} 2>&1 | grep 'open("\|stat("' | grep -v '".."\|openat\|No such file or directory\|"."\|open("/dev' | cut -d '"' -f2 | tr "\n" " "`)
-#    echo '---'
-
 
 
     (( B++ ))
 done
+
+
 # REMOVE DUPLICADOS
 WHEREIS=(`echo ${WHEREIS[@]} | tr " " "\n" | sort | uniq | tr "\n" " "`)
 
@@ -75,22 +89,6 @@ echo ${WHEREIS[@]} | sed 's/ /\n/g' | xargs -I {} cp -p -v {} $JAIL{}
 
 
 #---------- REQUISITOS OBRIGATORIOS ----------#
-# CRIA PASTAS REQUISITOS
-D=0
-while [ "$D" -lt ${#DIRECTORY[@]} ]
-do
-    mkdir -p -v $JAIL/${DIRECTORY[$D]}
-    (( D++ ))
-done
-
-mknod -m 666 $JAIL/dev/null c 1 3
-mknod -m 666 $JAIL/dev/tty c 5 0
-mknod -m 666 $JAIL/dev/zero c 1 5
-mknod -m 666 $JAIL/dev/random c 1 8
-
-chmod 777 $JAIL/tmp
-
-
 # TERMINFO
 cp -a -v /usr/share/terminfo/ $JAIL/usr/share/
 chmod 555 $JAIL/usr/share/terminfo
@@ -101,7 +99,7 @@ mkdir -p -v $JAIL/root
 cat /root/.bashrc > $JAIL/root/.bashrc
 
 # ADICIONA USUARIO root ao sistema
-cat /etc/passwd | grep 'root' > $JAIL/etc/passwd
+cat /etc/passwd | grep 'root:' > $JAIL/etc/passwd
 cat /etc/group | grep 'root' > $JAIL/etc/group
 
 
