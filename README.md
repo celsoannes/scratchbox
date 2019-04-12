@@ -17,3 +17,8 @@ foo@bar:~# apt-get install php
 $ whoami
 foo
 ```
+
+```console
+foo@bar:~$ whoami
+foo
+```
