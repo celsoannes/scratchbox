@@ -14,6 +14,6 @@ foo@bar:~# apt-get install php
 ```
 
 ```console
-foo@bar:~$ whoami
+$ whoami
 foo
 ```
