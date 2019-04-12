@@ -22,7 +22,7 @@ foo
 foo@bar:~$ whoami
 foo
 
-$ sudo apt-key fingerprint 0EBFCD88
+foo@bar:~$ sudo apt-key fingerprint 0EBFCD88
 ```
 
 
