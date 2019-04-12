@@ -8,3 +8,7 @@ echo teste
 ```php
 echo "teste";
 ```
+
+```console
+apt-get install php
+```
