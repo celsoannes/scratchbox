@@ -23,6 +23,9 @@ foo@bar:~$ whoami
 foo
 
 foo@bar:~$ sudo apt-key fingerprint 0EBFCD88
+
+
+$ curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
 ```
 
 
