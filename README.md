@@ -1,5 +1,5 @@
 # scratchbox
 Cria uma Jail baseada no debootstrap
-```bash
+```sh
 apt-get update
 ```
