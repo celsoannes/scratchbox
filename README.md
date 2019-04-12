@@ -10,5 +10,5 @@ echo "teste";
 ```
 
 ```console
-apt-get install php
+# apt-get install php
 ```
