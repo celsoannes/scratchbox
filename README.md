@@ -21,4 +21,8 @@ foo
 ```console
 foo@bar:~$ whoami
 foo
+
+$ sudo apt-key fingerprint 0EBFCD88
 ```
+
+
